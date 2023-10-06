@@ -1,0 +1,4 @@
+:root input[type="number"]
+{
+	max-width: 6rem;
+}
