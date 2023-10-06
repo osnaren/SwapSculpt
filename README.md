@@ -1,33 +1,36 @@
-FaceFusion
-==========
 
-> Next generation face swapper and enhancer.
+# SwapSculpt
 
-[![Build Status](https://img.shields.io/github/actions/workflow/status/facefusion/facefusion/ci.yml.svg?branch=master)](https://github.com/facefusion/facefusion/actions?query=workflow:ci)
-![License](https://img.shields.io/badge/license-MIT-green)
+Next-Generation Face Swapping and Enhancement. Seamlessly swap and enhance faces in just a click!
 
 
-Preview
+
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
+
+![GitHub last commit (branch)](https://img.shields.io/github/last-commit/osnaren/SwapSculpt/master)
+
+
+## UI Preview
 -------
 
 ![Preview](https://raw.githubusercontent.com/facefusion/facefusion/master/.github/preview.png?sanitize=true)
+## Installation
 
+Please note that the installation process for SwapSculpt requires technical skills and is not recommended for beginners. If you encounter any platform or installation-related issues, we kindly ask you not to open GitHub issues. Instead, we recommend reaching out to the [FaceFusion community on Discord](https://join.facefusion.io), where experienced users can guide you through the installation process.
 
-Installation
-------------
+For detailed installation instructions, you can refer to the [installation guide](https://docs.facefusion.io/installation) from the FaceFusion project. While SwapSculpt shares some similarities with FaceFusion, please follow the FaceFusion installation guide as the installation process for SwapSculpt aligns closely with it.
 
-Be aware, the installation needs technical skills and is not for beginners. Please do not open platform and installation related issues on GitHub. We have a very helpful [Discord](https://join.facefusion.io) community that will guide you to install FaceFusion.
+Your understanding and patience are greatly appreciated as you embark on your journey with SwapSculpt.
 
-Read the [installation](https://docs.facefusion.io/installation) now.
+## Usage
 
+To use SwapSculpt, follow these command-line instructions:
 
-Usage
------
-
-Run the command:
+```shell
+python run.py [options]
+```
 
 ```
-python run.py [options]
 
 -h, --help                                                                                       show this help message and exit
 -s SOURCE_PATH, --source SOURCE_PATH                                                             select a source image
@@ -58,21 +61,25 @@ python run.py [options]
 --execution-queue-count EXECUTION_QUEUE_COUNT                                                    specify the number of execution queries
 --skip-download                                                                                  omit automate downloads and lookups
 --headless                                                                                       run the program in headless mode
--v, --version                                                                                    show program's version number and exit
+-v, --version   
+
 ```
+## Disclaimer
 
+At SwapSculpt, we are committed to responsible and ethical usage of our software. We recognize that individuals may use technology in various ways, including for personal creative expression.
 
-Disclaimer
-----------
+We want to make it clear that we do not endorse or support any usage of SwapSculpt for the creation of explicit or adult content. It is essential to use our software within the bounds of legal and ethical standards.
 
-We acknowledge the unethical potential of FaceFusion and are resolutely dedicated to establishing safeguards against such misuse. This program has been engineered to abstain from processing inappropriate content such as nudity, graphic content and sensitive material.
+We expect all users to respect our guidelines and engage in ethical and responsible behavior. Any misuse of SwapSculpt for explicit content may result in consequences.
 
-It is important to note that we maintain a strong stance against any type of pornographic nature and do not collaborate with any websites promoting the unauthorized use of our software.
+We are dedicated to fostering a responsible and ethical approach to technology use, and your cooperation is crucial in maintaining these standards.
+### SwapSculpt Assets
 
-Users who seek to engage in such activities will face consequences, including being banned from our community. We reserve the right to report developers on GitHub who distribute unlocked forks of our software at any time.
+For detailed information about the assets used in SwapSculpt, please refer to the [Assets Documentation](./Assets.md).
+## Documentation
 
+For a more in-depth understanding of SwapSculpt and its features, please explore the comprehensive [documentation](https://docs.facefusion.io) available on the FaceFusion project's website.
 
-Documentation
--------------
+This documentation covers various aspects of face swapping and enhancement, and while it is primarily associated with FaceFusion, it can provide valuable insights for your journey with SwapSculpt.
 
-Read the [documentation](https://docs.facefusion.io) for a deep dive.
+Feel free to dive deep into the documentation to unlock the full potential of SwapSculpt.
