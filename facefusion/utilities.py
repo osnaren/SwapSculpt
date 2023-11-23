@@ -1,16 +1,17 @@
-from typing import List, Optional
+from typing import Any, List, Optional
+from concurrent.futures import ThreadPoolExecutor
 from functools import lru_cache
 from pathlib import Path
 from tqdm import tqdm
 import glob
-import mimetypes
+import filetype
 import os
 import platform
 import shutil
 import ssl
 import subprocess
 import tempfile
-import urllib
+import urllib.request
 import onnxruntime
 
 import facefusion.globals
@@ -94,7 +95,7 @@ def restore_audio(target_path : str, output_path : str) -> bool:
 	if trim_frame_end is not None:
 		end_time = trim_frame_end / fps
 		commands.extend([ '-to', str(end_time) ])
-	commands.extend([ '-i', target_path, '-c',  'copy', '-map', '0:v:0', '-map', '1:a:0', '-shortest', '-y', output_path ])
+	commands.extend([ '-i', target_path, '-c', 'copy', '-map', '0:v:0', '-map', '1:a:0', '-shortest', '-y', output_path ])
 	return run_ffmpeg(commands)
 
 
@@ -119,12 +120,14 @@ def get_temp_output_video_path(target_path : str) -> str:
 
 
 def normalize_output_path(source_path : Optional[str], target_path : Optional[str], output_path : Optional[str]) -> Optional[str]:
-	if is_file(source_path) and is_file(target_path) and is_directory(output_path):
-		source_name, _ = os.path.splitext(os.path.basename(source_path))
+	if is_file(target_path) and is_directory(output_path):
 		target_name, target_extension = os.path.splitext(os.path.basename(target_path))
-		return os.path.join(output_path, source_name + '-' + target_name + target_extension)
+		if is_file(source_path):
+			source_name, _ = os.path.splitext(os.path.basename(source_path))
+			return os.path.join(output_path, source_name + '-' + target_name + target_extension)
+		return os.path.join(output_path, target_name + target_extension)
 	if is_file(target_path) and output_path:
-		target_name, target_extension = os.path.splitext(os.path.basename(target_path))
+		_, target_extension = os.path.splitext(os.path.basename(target_path))
 		output_name, output_extension = os.path.splitext(os.path.basename(output_path))
 		output_directory_path = os.path.dirname(output_path)
 		if is_directory(output_directory_path) and output_extension:
@@ -165,19 +168,22 @@ def is_directory(directory_path : str) -> bool:
 
 def is_image(image_path : str) -> bool:
 	if is_file(image_path):
-		mimetype, _ = mimetypes.guess_type(image_path)
+		mimetype = filetype.guess(image_path).mime
 		return bool(mimetype and mimetype.startswith('image/'))
 	return False
 
 
 def is_video(video_path : str) -> bool:
 	if is_file(video_path):
-		mimetype, _ = mimetypes.guess_type(video_path)
+		mimetype = filetype.guess(video_path).mime
 		return bool(mimetype and mimetype.startswith('video/'))
 	return False
 
 
 def conditional_download(download_directory_path : str, urls : List[str]) -> None:
+	with ThreadPoolExecutor() as executor:
+		for url in urls:
+			executor.submit(get_download_size, url)
 	for url in urls:
 		download_file_path = os.path.join(download_directory_path, os.path.basename(url))
 		total = get_download_size(url)
@@ -186,7 +192,8 @@ def conditional_download(download_directory_path : str, urls : List[str]) -> Non
 		else:
 			initial = 0
 		if initial < total:
-			with tqdm(total = total, initial = initial, desc = wording.get('downloading'), unit = 'B', unit_scale = True, unit_divisor = 1024) as progress:
+			bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt}]'
+			with tqdm(total = total, initial = initial, desc = wording.get('downloading'), unit = 'B', unit_scale = True, unit_divisor = 1024, bar_format = bar_format) as progress:
 				subprocess.Popen([ 'curl', '--create-dirs', '--silent', '--insecure', '--location', '--continue-at', '-', '--output', download_file_path, url ])
 				current = initial
 				while current < total:
@@ -198,7 +205,7 @@ def conditional_download(download_directory_path : str, urls : List[str]) -> Non
 @lru_cache(maxsize = None)
 def get_download_size(url : str) -> int:
 	try:
-		response = urllib.request.urlopen(url) # type: ignore[attr-defined]
+		response = urllib.request.urlopen(url, timeout = 10)
 		return int(response.getheader('Content-Length'))
 	except (OSError, ValueError):
 		return 0
@@ -231,9 +238,19 @@ def decode_execution_providers(execution_providers: List[str]) -> List[str]:
 	return [ execution_provider for execution_provider, encoded_execution_provider in zip(available_execution_providers, encoded_execution_providers) if any(execution_provider in encoded_execution_provider for execution_provider in execution_providers) ]
 
 
-def get_device(execution_providers : List[str]) -> str:
-	if 'CUDAExecutionProvider' in execution_providers:
-		return 'cuda'
+def map_device(execution_providers : List[str]) -> str:
 	if 'CoreMLExecutionProvider' in execution_providers:
 		return 'mps'
+	if 'CUDAExecutionProvider' in execution_providers or 'ROCMExecutionProvider' in execution_providers :
+		return 'cuda'
+	if 'OpenVINOExecutionProvider' in execution_providers:
+		return 'mkl'
 	return 'cpu'
+
+
+def create_metavar(ranges : List[Any]) -> str:
+	return '[' + str(ranges[0]) + '-' + str(ranges[-1]) + ']'
+
+
+def update_status(message : str, scope : str = 'FACEFUSION.CORE') -> None:
+	print('[' + scope + '] ' + message)
